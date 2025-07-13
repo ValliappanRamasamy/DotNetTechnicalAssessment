@@ -1,0 +1,8 @@
+@WebAPI_HostAddress = http://localhost:5182
+
+POST {{WebAPI_HostAddress}}/api/users/
+Accept: application/json
+
+POST {{WebAPI_HostAddress}}/api/senseboxes/
+Accept: application/json
+###
