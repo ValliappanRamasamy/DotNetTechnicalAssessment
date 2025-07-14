@@ -85,8 +85,17 @@ namespace WebAPI.Repositories
             // Read the response content as a string
             //string responseContent = await response.Content.ReadAsStringAsync();
 
-            //if the SenseBoxResponse Object data is null or message is not equals to "Box successfully created", then the new sense box in OpenSenseMap is created successfully with an unique id.
-            if ((senseboxResponse.data == null) || !senseboxResponse.message.Equals("Box successfully created"))
+            //if the SenseBoxResponse Object data is not null
+            if (senseboxResponse.data != null)
+            {
+                //if the SenseBoxResponse Object data._id is null or empty or message is not equals to "Box successfully created", then the new sense box in OpenSenseMap is created successfully with an unique id.
+                if (string.IsNullOrEmpty(senseboxResponse.data._id) || !senseboxResponse.message.Equals("Box successfully created"))
+                {
+                    //Debug.WriteLine(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
+                    _logger.LogDebug(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
+                }
+            }
+            else
             {
                 //Debug.WriteLine(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
                 _logger.LogDebug(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);

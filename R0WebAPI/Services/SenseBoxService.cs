@@ -57,7 +57,29 @@ public class SenseBoxService : ISenseBoxService
                 _logger.LogError("Model is required !");
                 throw new ArgumentException("Model is required", nameof(senseboxRequest.model));
             }
-            
+            if (senseboxRequest.location != null)
+            {
+                if (senseboxRequest.location.lat < 0)
+                {
+                    _logger.LogError("Location latitude is required and must be greater than or equal to 0 !");
+                    throw new ArgumentException("Location latitude is required and must be greater than or equal to 0 !", nameof(senseboxRequest.location.lat));
+                }
+                if (senseboxRequest.location.lng < 0)
+                {
+                    _logger.LogError("Location longitude is required and must be greater than or equal to 0 !");
+                    throw new ArgumentException("Location longitude is required and must be greater than or equal to 0 !", nameof(senseboxRequest.location.lng));
+                }
+                if (senseboxRequest.location.height < 0)
+                {
+                    _logger.LogError("Location height is required and must be greater than or equal to 0 !");
+                    throw new ArgumentException("Location height is required and must be greater than or equal to 0 !", nameof(senseboxRequest.location.height));
+                }
+            }
+            else
+            {
+                _logger.LogError("Location is required !");
+                throw new ArgumentException("Location is required", nameof(senseboxRequest.location));
+            }
 
             // To check / validate creation of a new sense box is only successful after the valid user is login / sign-in.
             if (!UserService._tokenEmail.ContainsKey(token))

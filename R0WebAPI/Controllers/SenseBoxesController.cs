@@ -100,9 +100,17 @@ namespace WebAPI.Controllers
                 //Call ISenseBoxService SaveNewSenseBoxAsync API by passing the parameter SenseBoxRequest Object with mandatory fields email, name, model, exposure, and location & valid authorization token
                 _responseContent = await _senseboxService.SaveNewSenseBoxAsync(senseboxRequest, token);
 
-                //if the SenseBoxResponse Object data is not null or message is "Box successfully created", then the new sense box in OpenSenseMap is created successfully with an unique id.
-                if ((_responseContent.data != null) || _responseContent.message.Equals("Box successfully created"))
-                    return Ok("A new sense box in OpenSenseMap created successfully with an unique id of " + _responseContent.data._id);
+                //if the SenseBoxResponse Object data is not null
+                if (_responseContent.data != null)
+                {
+                    //if the SenseBoxResponse Object data._id is not null or not empty or message is "Box successfully created", then the new sense box in OpenSenseMap is created successfully with an unique id.
+                    if (!string.IsNullOrEmpty(_responseContent.data._id) || _responseContent.message.Equals("Box successfully created"))
+                        return Ok("A new sense box in OpenSenseMap created successfully with an unique id of " + _responseContent.data._id);
+                    else
+                        //if (string.IsNullOrEmpty(_responseContent.data._id) || !_responseContent.message.Equals("Box successfully created"))
+                        //else i.e. the SenseBoxResponse Object the SenseBoxResponse Object data._id is null or empty or message is not "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
+                        return BadRequest(_responseContent.code + " - A new sense box in OpenSenseMap was not created or not saved due to " + _responseContent.message);
+                }
                 else
                     //if (string.IsNullOrEmpty(_responseContent.data._id) || !_responseContent.message.Equals("Box successfully created"))
                     //else i.e. the SenseBoxResponse Object the SenseBoxResponse Object data._id is null or empty or message is not "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
