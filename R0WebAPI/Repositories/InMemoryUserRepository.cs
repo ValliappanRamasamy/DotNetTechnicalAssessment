@@ -67,6 +67,7 @@ namespace WebAPI.Repositories
 
             var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
+            // Make a Post Async call https://api.opensensemap.org/users/register with UserRegisterRequest object as httpContent
             var response = await _httpClient.PostAsync(RegisterUrl, httpContent);
 
             // Read the response content as a JSON
@@ -91,7 +92,8 @@ namespace WebAPI.Repositories
             var jsonContent = JsonSerializer.Serialize(signinInfo);
 
             var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-                        
+
+            // Make a Post Async call https://api.opensensemap.org/users/sign-in with UserSigninRequest object as httpContent            
             var response = await _httpClient.PostAsync(SignInUrl, httpContent);
 
             // Read the response content as a JSON
@@ -135,6 +137,7 @@ namespace WebAPI.Repositories
             // Set the Authorization header
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+            // Make a Post Async call https://api.opensensemap.org/users/sign-out with token as Authorization header "Bearer " + token value
             var response = await _httpClient.PostAsync(SignOutUrl, httpContent);
             
             // Read the response content as a JSON

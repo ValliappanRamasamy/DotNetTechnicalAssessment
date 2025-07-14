@@ -77,6 +77,7 @@ namespace WebAPI.Repositories
             // Set the Authorization header
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+            // Make a Post Async call https://api.opensensemap.org/boxes with SenseBoxRequest object as httpContent
             var response = await _httpClient.PostAsync(SenseBoxUrl, httpContent);            
 
             // Read the response content as a JSON
@@ -96,7 +97,7 @@ namespace WebAPI.Repositories
                 }
             }
             else
-            ////if the SenseBoxResponse Object data is null, then the new sense box in OpenSenseMap is not created or not saved.
+            //if the SenseBoxResponse Object data is null, then the new sense box in OpenSenseMap is not created or not saved.
             {
                 //Debug.WriteLine(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
                 _logger.LogDebug(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
@@ -112,6 +113,7 @@ namespace WebAPI.Repositories
         // https://api.opensensemap.org/boxes/686f88b45e06c100080ad7f5?format=json
         public async Task<SenseBox> GetSenseBoxByIdAsync(string senseBoxId)
         {
+        // Make a Get Async call https://api.opensensemap.org/boxes/686f88b45e06c100080ad7f5?format=json with senseBoxId
         var response = await _httpClient.GetAsync(SenseBoxUrl + "/" + senseBoxId + "?format=json");
 
         // Read the response content as a JSON
