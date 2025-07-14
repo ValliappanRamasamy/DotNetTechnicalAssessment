@@ -88,7 +88,7 @@ namespace WebAPI.Repositories
             //if the SenseBoxResponse Object data is not null
             if (senseboxResponse.data != null)
             {
-                //if the SenseBoxResponse Object data._id is null or empty or message is not equals to "Box successfully created", then the new sense box in OpenSenseMap is created successfully with an unique id.
+                //if the SenseBoxResponse Object data._id is null or empty or message is not equals to "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
                 if (string.IsNullOrEmpty(senseboxResponse.data._id) || !senseboxResponse.message.Equals("Box successfully created"))
                 {
                     //Debug.WriteLine(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
@@ -96,6 +96,7 @@ namespace WebAPI.Repositories
                 }
             }
             else
+            ////if the SenseBoxResponse Object data is null, then the new sense box in OpenSenseMap is not created or not saved.
             {
                 //Debug.WriteLine(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);
                 _logger.LogDebug(response.IsSuccessStatusCode + "=" + senseboxResponse.code + ", " + senseboxResponse.message);

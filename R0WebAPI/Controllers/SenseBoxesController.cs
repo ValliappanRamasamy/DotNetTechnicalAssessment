@@ -108,12 +108,12 @@ namespace WebAPI.Controllers
                         return Ok("A new sense box in OpenSenseMap created successfully with an unique id of " + _responseContent.data._id);
                     else
                         //if (string.IsNullOrEmpty(_responseContent.data._id) || !_responseContent.message.Equals("Box successfully created"))
-                        //else i.e. the SenseBoxResponse Object the SenseBoxResponse Object data._id is null or empty or message is not "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
+                        //else i.e. the SenseBoxResponse Object data._id is null or empty or message is not "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
                         return BadRequest(_responseContent.code + " - A new sense box in OpenSenseMap was not created or not saved due to " + _responseContent.message);
                 }
                 else
                     //if (string.IsNullOrEmpty(_responseContent.data._id) || !_responseContent.message.Equals("Box successfully created"))
-                    //else i.e. the SenseBoxResponse Object the SenseBoxResponse Object data._id is null or empty or message is not "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
+                    //else i.e. the SenseBoxResponse Object data._id is null or empty or message is not "Box successfully created", then the new sense box in OpenSenseMap is not created or not saved.
                     return BadRequest(_responseContent.code + " - A new sense box in OpenSenseMap was not created or not saved due to " + _responseContent.message);
                 
             }
