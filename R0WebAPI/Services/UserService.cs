@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using WebAPI.Models;
 using WebAPI.Repositories;
 
@@ -14,12 +15,21 @@ public class UserService : IUserService
         private readonly ILogger<UserService> _logger;
 
         private User _responseContent;
+
+        //Using MemeoryCache
+        //public static readonly IMemoryCache _cache;
+
+        //Storing the Token in Memory using a Static Variable
         public static Dictionary<string, string> _tokenEmail;
 
+
+
+        //public UserService(IUserRepository userRepository, ILogger<UserService> logger, IMemoryCache cache)
         public UserService(IUserRepository userRepository, ILogger<UserService> logger)
         {
             _userRepository = userRepository;
             _logger = logger;
+            //_cache = cache;
 
             _responseContent = new User();
             _tokenEmail = new Dictionary<string, string>();
@@ -92,9 +102,13 @@ public class UserService : IUserService
 
             //if the UserRegisterResponse Object code equals "Authorized", then it is a Successfully signed in with a token returned back.
             if (_responseContent.code.Equals("Authorized"))
-                //Upon successful log in, store / persist the logged in user's token and corresponding email
-                _tokenEmail.Add(_responseContent.token, userSigninInfo.email);            
-            
+            {
+                //Upon successful log in, store / persist the logged in user's token and corresponding email in the static Dictionary variable _tokenEmail.
+                _tokenEmail.Add(_responseContent.token, userSigninInfo.email);
+
+                // Store the token in memory cache with an expiration time
+                //_cache.Set("userToken", _responseContent.token, TimeSpan.FromMinutes(30));
+            }
             return _responseContent;
         }
 
@@ -105,6 +119,9 @@ public class UserService : IUserService
             {
                 //Upon successful log out, clear the token in the cache or object(s) that we have persisted.
                 _tokenEmail.Remove(token);
+
+                //Upon successful log out, clear the token in the cache or object(s) that we have persisted.
+                //_cache.Remove("userToken");
             }
             // Signout the user with the database / web API call
             return _responseContent;

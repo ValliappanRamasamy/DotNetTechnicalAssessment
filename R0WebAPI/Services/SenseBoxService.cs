@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Threading.Tasks;
 using WebAPI.Controllers;
 using WebAPI.Models;
@@ -79,9 +80,10 @@ public class SenseBoxService : ISenseBoxService
             {
                 _logger.LogError("Location is required !");
                 throw new ArgumentException("Location is required", nameof(senseboxRequest.location));
-            }
+            }                  
 
             // To check / validate creation of a new sense box is only successful after the valid user is login / sign-in.
+            //if (!UserService._tokenEmail.ContainsKey(token) || !UserService._cache.TryGetValue("userToken", out string userToken))
             if (!UserService._tokenEmail.ContainsKey(token))
             {
                 _responseContent.code = "UnauthorizedAccess";
