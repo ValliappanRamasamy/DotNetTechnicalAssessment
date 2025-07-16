@@ -96,9 +96,11 @@ namespace WebAPI.Controllers
                     return BadRequest("Invalid Authorization header.");
                 }
 
-                
-                //Call ISenseBoxService SaveNewSenseBoxAsync API by passing the parameter SenseBoxRequest Object with mandatory fields email, name, model, exposure, and location & valid authorization token
-                _responseContent = await _senseboxService.SaveNewSenseBoxAsync(senseboxRequest, token);
+                // To check / validate creation of a new sense box is only successful after the valid user is login / sign-in.
+                //if (UsersController._cache.TryGetValue("userToken", out string userToken))
+
+                    //Call ISenseBoxService SaveNewSenseBoxAsync API by passing the parameter SenseBoxRequest Object with mandatory fields email, name, model, exposure, and location & valid authorization token
+                    _responseContent = await _senseboxService.SaveNewSenseBoxAsync(senseboxRequest, token);
 
                 //if the SenseBoxResponse Object data is not null
                 if (_responseContent.data != null)

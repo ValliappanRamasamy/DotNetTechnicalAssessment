@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.Http.Headers;
@@ -23,13 +24,18 @@ namespace WebAPI.Controllers
 
         private readonly HttpClient _httpClient;
 
-        private User _responseContent;       
+        private User _responseContent;
 
+        //Using MemeoryCache
+        //public static readonly IMemoryCache _cache;
+        //public UsersController(IUserService userService, ILogger<UsersController> logger, HttpClient httpClient, IMemoryCache cache)
         public UsersController(IUserService userService, ILogger<UsersController> logger, HttpClient httpClient)
         {
             _userService = userService;
             _logger = logger;           
             _httpClient = httpClient;
+
+            //_cache = cache;
 
             _responseContent = new User();            
         }
@@ -126,8 +132,12 @@ namespace WebAPI.Controllers
                 _responseContent = await _userService.SigninUserAsync(userSigninInfo);
 
                 //if the UserRegisterResponse Object code equals "Authorized", then it is a Successfully signed in with a token returned back.
-                if (_responseContent.code.Equals("Authorized"))                    
-                    return Ok(_responseContent.message + " & token = " + _responseContent.token);                
+                if (_responseContent.code.Equals("Authorized"))
+                {
+                    // Store the token in memory cache with an expiration time
+                    //_cache.Set("userToken", _responseContent.token, TimeSpan.FromMinutes(30));
+                    return Ok(_responseContent.message + " & token = " + _responseContent.token);
+                }
                 else
                     //else i.e. the UserRegisterResponse Object code not equals "Authorized", then it is a Failure of user signing in i.e. Unauthorized.
                     return BadRequest(_responseContent.message);
@@ -195,7 +205,10 @@ namespace WebAPI.Controllers
 
                 //if the UserRegisterResponse Object code equals "Ok", then it is a Successfully signed out and clear the tokens.
                 if (_responseContent.code.Equals("Ok"))
-                {                    
+                {
+                    //Upon successful log out, clear the token in the cache or object(s) that we have persisted.
+                    //_cache.Remove("userToken");
+
                     //Upon successful log out, clear the token in the currently loggedin User object.
                     _responseContent.token = "";
                     _responseContent.refreshToken = "";
