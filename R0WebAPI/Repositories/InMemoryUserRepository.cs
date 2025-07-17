@@ -16,8 +16,7 @@ using static System.Net.Mime.MediaTypeNames;
 using Microsoft.Extensions.Configuration;
 
 namespace WebAPI.Repositories
-{
-    
+{    
     public class InMemoryUserRepository : IUserRepository
     {
         // This could be replaced with a real database context
@@ -62,16 +61,10 @@ namespace WebAPI.Repositories
             };
             _users.Add(user);
 
-
             var jsonContent = JsonSerializer.Serialize(userInfo);
-
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Make a Post Async call https://api.opensensemap.org/users/register with UserRegisterRequest object as httpContent
-            var response = await _httpClient.PostAsync(RegisterUrl, httpContent);
-
-            // Read the response content as a JSON
-            User userReqisterResponse = await response.Content.ReadFromJsonAsync<User>();
+                        
+            // call the function to prepare http content and Make a Post Async call https://api.opensensemap.org/users/register with UserRegisterRequest object as httpContent
+            User userReqisterResponse = await prepareHttpContentMakePostCallWOHeader(RegisterUrl, jsonContent);
 
             // Read the response content as a string
             //string responseContent = await response.Content.ReadAsStringAsync();
@@ -79,7 +72,7 @@ namespace WebAPI.Repositories
             if (!userReqisterResponse.code.Equals("Created"))
             {
                 //Debug.WriteLine(response.IsSuccessStatusCode + "=" + userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token); 
-                _logger.LogDebug(response.IsSuccessStatusCode + "=" + userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token);
+                _logger.LogDebug(userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token);
             }
             
             return userReqisterResponse;
@@ -88,23 +81,17 @@ namespace WebAPI.Repositories
 
         public async Task<User> SigninUserAsync(UserSigninRequest signinInfo)
         {
+            var jsonContent = JsonSerializer.Serialize(signinInfo);                       
 
-            var jsonContent = JsonSerializer.Serialize(signinInfo);
-
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Make a Post Async call https://api.opensensemap.org/users/sign-in with UserSigninRequest object as httpContent            
-            var response = await _httpClient.PostAsync(SignInUrl, httpContent);
-
-            // Read the response content as a JSON
-            User userSigninResponse = await response.Content.ReadFromJsonAsync<User>();
+            // call the function to prepare http content and Make a Post Async call https://api.opensensemap.org/users/sign-in with UserSigninRequest object as httpContent
+            User userSigninResponse = await prepareHttpContentMakePostCallWOHeader(SignInUrl, jsonContent);
 
             // Read the response content as a string
             //string responseContent = await response.Content.ReadAsStringAsync();
 
             if (!userSigninResponse.code.Equals("Authorized")) {
                 //Debug.WriteLine(response.IsSuccessStatusCode + "=" + userSigninResponse.code + ", " + userSigninResponse.message + ", " + userSigninResponse.token);
-                _logger.LogDebug(response.IsSuccessStatusCode + "=" + userSigninResponse.code + ", " + userSigninResponse.message + ", " + userSigninResponse.token);
+                _logger.LogDebug(userSigninResponse.code + ", " + userSigninResponse.message + ", " + userSigninResponse.token);
             }
             return userSigninResponse;
         }
@@ -129,7 +116,37 @@ namespace WebAPI.Repositories
         {
            
             var jsonContent = JsonSerializer.Serialize("");
+                       
+            // call the function to prepare http content, header bearer token, and Make a Post Async call https://api.opensensemap.org/users/sign-out with token as Authorization header "Bearer " + token value
+            User userReqisterResponse = await prepareHttpContentMakePostCallWithHeader(SignOutUrl, jsonContent, token);
+            
+            // Read the response content as a string
+            //string responseContent = await response.Content.ReadAsStringAsync();
 
+            if (!userReqisterResponse.code.Equals("Ok"))
+            {
+                //Debug.WriteLine(response.IsSuccessStatusCode + "=" + userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token); 
+                _logger.LogDebug(userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token);
+            }
+            
+            return userReqisterResponse;
+        }
+
+        private async Task<User> prepareHttpContentMakePostCallWOHeader(string url,string? jsonContent)
+        {
+            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            // Make a Post Async call to the respective service API url with respective httpContent
+            var response = await _httpClient.PostAsync(url, httpContent);
+
+            // Read the response content as a JSON
+            User userResponse = await response.Content.ReadFromJsonAsync<User>();
+
+            return userResponse;
+        }
+
+        private async Task<User> prepareHttpContentMakePostCallWithHeader(string url, string? jsonContent, string token)
+        {
             var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             // Set the Content-type
@@ -137,23 +154,15 @@ namespace WebAPI.Repositories
             // Set the Authorization header
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            // Make a Post Async call https://api.opensensemap.org/users/sign-out with token as Authorization header "Bearer " + token value
-            var response = await _httpClient.PostAsync(SignOutUrl, httpContent);
-            
+            // Make a Post Async call to the respective service API url with respective httpContent and httpHeader bearer
+            var response = await _httpClient.PostAsync(url, httpContent);
+
             // Read the response content as a JSON
-            User userReqisterResponse = await response.Content.ReadFromJsonAsync<User>();
+            User userResponse = await response.Content.ReadFromJsonAsync<User>();
 
-            // Read the response content as a string
-            //string responseContent = await response.Content.ReadAsStringAsync();
-
-            if (!userReqisterResponse.code.Equals("Ok"))
-            {
-                //Debug.WriteLine(response.IsSuccessStatusCode + "=" + userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token); 
-                _logger.LogDebug(response.IsSuccessStatusCode + "=" + userReqisterResponse.code + ", " + userReqisterResponse.message + ", " + userReqisterResponse.token);
-            }
-            
-            return userReqisterResponse;
+            return userResponse;
         }
+
     }
     
 }

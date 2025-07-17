@@ -14,8 +14,7 @@ using System.Security.Cryptography.Xml;
 using Microsoft.Extensions.Configuration;
 
 namespace WebAPI.Repositories
-{
-    
+{    
     public class InMemorySenseBoxRepository : ISenseBoxRepository
     {
         // This could be replaced with a real database context
@@ -71,14 +70,9 @@ namespace WebAPI.Repositories
             _senseboxes.Add(sensebox);
 
             var jsonContent = JsonSerializer.Serialize(senseboxRequest);
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            // Set the Content-type
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            // Set the Authorization header
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            // Make a Post Async call https://api.opensensemap.org/boxes with SenseBoxRequest object as httpContent
-            var response = await _httpClient.PostAsync(SenseBoxUrl, httpContent);            
+            // call the function to prepare http content, header bearer token, and Make a Post Async call https://api.opensensemap.org/boxes with SenseBoxRequest object as httpContent
+            var response = await prepareHttpContentMakePostCallWithHeader(SenseBoxUrl, jsonContent, token);            
 
             // Read the response content as a JSON
             SenseBoxResponse senseboxResponse = await response.Content.ReadFromJsonAsync<SenseBoxResponse>();
@@ -113,7 +107,7 @@ namespace WebAPI.Repositories
         // https://api.opensensemap.org/boxes/686f88b45e06c100080ad7f5?format=json
         public async Task<SenseBox> GetSenseBoxByIdAsync(string senseBoxId)
         {
-        // Make a Get Async call https://api.opensensemap.org/boxes/686f88b45e06c100080ad7f5?format=json with senseBoxId
+        // call the function to prepare http content, and Make a Get Async call https://api.opensensemap.org/boxes/686f88b45e06c100080ad7f5?format=json with senseBoxId
         var response = await _httpClient.GetAsync(SenseBoxUrl + "/" + senseBoxId + "?format=json");
 
         // Read the response content as a JSON
@@ -129,6 +123,21 @@ namespace WebAPI.Repositories
             _logger.LogDebug("The sense box by id {" + senseBoxId + "} OpenSenseMap is not found or not available.");
         }
         return senseboxResponse;
+        }
+
+        private async Task<HttpResponseMessage> prepareHttpContentMakePostCallWithHeader(string url, string? jsonContent, string token)
+        {
+            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            // Set the Content-type
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            // Set the Authorization header
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // Make a Post Async call to the respective service API url with respective httpContent and httpHeader bearer
+            var response = await _httpClient.PostAsync(url, httpContent);                      
+
+            return response;
         }
     }
 
