@@ -1,19 +1,22 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Text;
-using System.Threading.Tasks;
-using WebAPI.Models;
-using WebAPI.Controllers;
-using System.Diagnostics;
-using System.Net.Http.Json;
-using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using static System.Net.Mime.MediaTypeNames;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
+using R0WebAPI.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Runtime.ConstrainedExecution;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using WebAPI.Controllers;
+using WebAPI.Models;
+using static System.Net.Mime.MediaTypeNames;
+
 
 namespace WebAPI.Repositories
 {    
@@ -24,6 +27,7 @@ namespace WebAPI.Repositories
 
         private readonly HttpClient _httpClient;
         private readonly ILogger<InMemoryUserRepository> _logger;
+        private readonly ServiceUtilityRepository _serviceUtilityRepository;
 
         private string RegisterUrl;
         private string SignInUrl;
@@ -33,6 +37,7 @@ namespace WebAPI.Repositories
         {
             _httpClient = httpClient;
             _logger = logger;
+            _serviceUtilityRepository = new ServiceUtilityRepository(_httpClient);
 
             var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory) // Set the base path to the current directory
@@ -64,8 +69,9 @@ namespace WebAPI.Repositories
             var jsonContent = JsonSerializer.Serialize(userInfo);
                         
             // call the function to prepare http content and Make a Post Async call https://api.opensensemap.org/users/register with UserRegisterRequest object as httpContent
-            User userReqisterResponse = await prepareHttpContentMakePostCallWOHeader(RegisterUrl, jsonContent);
+            var response = await _serviceUtilityRepository.prepareHttpContentMakePostCallWOHeader(RegisterUrl, jsonContent);
 
+            User userReqisterResponse = await response.Content.ReadFromJsonAsync<User>();
             // Read the response content as a string
             //string responseContent = await response.Content.ReadAsStringAsync();
 
@@ -84,7 +90,10 @@ namespace WebAPI.Repositories
             var jsonContent = JsonSerializer.Serialize(signinInfo);                       
 
             // call the function to prepare http content and Make a Post Async call https://api.opensensemap.org/users/sign-in with UserSigninRequest object as httpContent
-            User userSigninResponse = await prepareHttpContentMakePostCallWOHeader(SignInUrl, jsonContent);
+            var response = await _serviceUtilityRepository.prepareHttpContentMakePostCallWOHeader(SignInUrl, jsonContent);
+            
+            // Read the response content as a JSON
+            User userSigninResponse = await response.Content.ReadFromJsonAsync<User>();
 
             // Read the response content as a string
             //string responseContent = await response.Content.ReadAsStringAsync();
@@ -118,7 +127,10 @@ namespace WebAPI.Repositories
             var jsonContent = JsonSerializer.Serialize("");
                        
             // call the function to prepare http content, header bearer token, and Make a Post Async call https://api.opensensemap.org/users/sign-out with token as Authorization header "Bearer " + token value
-            User userReqisterResponse = await prepareHttpContentMakePostCallWithHeader(SignOutUrl, jsonContent, token);
+            var  response = await _serviceUtilityRepository.prepareHttpContentMakePostCallWithHeader(SignOutUrl, jsonContent, token);
+
+            // Read the response content as a JSON
+            User userReqisterResponse = await response.Content.ReadFromJsonAsync<User>(); 
             
             // Read the response content as a string
             //string responseContent = await response.Content.ReadAsStringAsync();
@@ -132,36 +144,7 @@ namespace WebAPI.Repositories
             return userReqisterResponse;
         }
 
-        private async Task<User> prepareHttpContentMakePostCallWOHeader(string url,string? jsonContent)
-        {
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Make a Post Async call to the respective service API url with respective httpContent
-            var response = await _httpClient.PostAsync(url, httpContent);
-
-            // Read the response content as a JSON
-            User userResponse = await response.Content.ReadFromJsonAsync<User>();
-
-            return userResponse;
-        }
-
-        private async Task<User> prepareHttpContentMakePostCallWithHeader(string url, string? jsonContent, string token)
-        {
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Set the Content-type
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            // Set the Authorization header
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            // Make a Post Async call to the respective service API url with respective httpContent and httpHeader bearer
-            var response = await _httpClient.PostAsync(url, httpContent);
-
-            // Read the response content as a JSON
-            User userResponse = await response.Content.ReadFromJsonAsync<User>();
-
-            return userResponse;
-        }
+        
 
     }
     

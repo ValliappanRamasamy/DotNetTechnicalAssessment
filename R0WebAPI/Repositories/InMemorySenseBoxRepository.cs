@@ -12,6 +12,7 @@ using System.Net.Http.Json;
 using System;
 using System.Security.Cryptography.Xml;
 using Microsoft.Extensions.Configuration;
+using R0WebAPI.Repositories;
 
 namespace WebAPI.Repositories
 {    
@@ -22,13 +23,15 @@ namespace WebAPI.Repositories
 
         private readonly HttpClient _httpClient;
         private readonly ILogger<InMemorySenseBoxRepository> _logger;
+        private readonly ServiceUtilityRepository _serviceUtilityRepository;
 
         private string SenseBoxUrl;
 
         public InMemorySenseBoxRepository(HttpClient httpClient, ILogger<InMemorySenseBoxRepository> logger)
         {
             _httpClient = httpClient;
-            _logger = logger;            
+            _logger = logger;
+            _serviceUtilityRepository = new ServiceUtilityRepository(_httpClient);
 
             var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory) // Set the base path to the current directory
@@ -72,7 +75,7 @@ namespace WebAPI.Repositories
             var jsonContent = JsonSerializer.Serialize(senseboxRequest);
 
             // call the function to prepare http content, header bearer token, and Make a Post Async call https://api.opensensemap.org/boxes with SenseBoxRequest object as httpContent
-            var response = await prepareHttpContentMakePostCallWithHeader(SenseBoxUrl, jsonContent, token);            
+            var response = await _serviceUtilityRepository.prepareHttpContentMakePostCallWithHeader(SenseBoxUrl, jsonContent, token);            
 
             // Read the response content as a JSON
             SenseBoxResponse senseboxResponse = await response.Content.ReadFromJsonAsync<SenseBoxResponse>();
@@ -125,20 +128,6 @@ namespace WebAPI.Repositories
         return senseboxResponse;
         }
 
-        private async Task<HttpResponseMessage> prepareHttpContentMakePostCallWithHeader(string url, string? jsonContent, string token)
-        {
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Set the Content-type
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            // Set the Authorization header
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            // Make a Post Async call to the respective service API url with respective httpContent and httpHeader bearer
-            var response = await _httpClient.PostAsync(url, httpContent);                      
-
-            return response;
-        }
     }
 
 }

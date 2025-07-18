@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using R0WebAPI.Repositories;
 using System.Text;
 using WebAPI.Repositories;
 using WebAPI.Services;
@@ -13,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISenseBoxService, SenseBoxService>();
 
-// Register IUserRepository,ISenseBoxRepository
+// Register IUserRepository, ISenseBoxRepository
 builder.Services.AddHttpClient<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddHttpClient<ISenseBoxRepository, InMemorySenseBoxRepository>();
 
